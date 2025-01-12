@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'app_state.dart';
 
 class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // Access the global app state
+    final appState = Provider.of<AppState>(context);
+    final machines = appState.machines; // your global list
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Dashboard'),
@@ -25,19 +30,18 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
       body: GridView.builder(
+        padding: EdgeInsets.all(16.0),
+        physics: BouncingScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 1,
+          childAspectRatio: 0.95,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
         ),
-        itemCount: 10, // Replace with actual machine count
+        itemCount: machines.length,
         itemBuilder: (context, index) {
-          // Example machine status data
-          String machineName = 'CP3L0${index + 1}';
-          String status = index % 3 == 0
-              ? 'down'
-              : index % 3 == 1
-              ? 'needs_maintenance'
-              : 'running';
+          final machine = machines[index];
+          String status = machine.status;
           Color statusColor = status == 'down'
               ? Colors.red
               : status == 'needs_maintenance'
@@ -46,12 +50,13 @@ class DashboardScreen extends StatelessWidget {
 
           return GestureDetector(
             onTap: () {
-              // Navigate to machine details screen
-              Navigator.pushNamed(context, '/machine_details',
-                  arguments: {
-                    'machineName': machineName,
-                    'status': status,
-                  });
+              Navigator.pushNamed(
+                context,
+                '/machine_details',
+                arguments: {
+                  'machineName': machine.name,
+                },
+              );
             },
             child: Card(
               elevation: 5,
@@ -70,7 +75,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      machineName,
+                      machine.name,
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
                   ],
